@@ -1,10 +1,16 @@
 
 import PIXI from 'pixi.js';
-import TowerDefence from './js/towerDefence';
+import io from 'socket.io-client';
 
-class Game {
-	constructor(){
-		console.log("Game Started...");
+import Game from './js/game';
+
+class App {
+	constructor(domain){
+
+		// Try to connect to server
+		this.socket = io(domain);
+		this.socket.on('connect', this._onConnect.bind(this));
+		this.socket.on('handshake', this._onConnected.bind(this));
 
 		// Create the canvas
 		this.renderer = PIXI.autoDetectRenderer(this.w, this.h, {backgroundColor : 0x000000, antialias: true});
@@ -12,31 +18,51 @@ class Game {
 
 		// Create the stage
 		this.stage = new PIXI.Container();
+		this.renderer.render(this.stage); // Initialy draw stage
 
-		// Create the TD
-		this.TD = new TowerDefence();
-
-		this.render();
+		this.stage.interactive = true;
+		this.stage.hitArea = new PIXI.Rectangle(0, 0, this.w, this.h);
 	}
 
-	// Will only be called once
-	render(){
-		this.TD.render(this.stage);
+	_start(id){
+		this.game = new Game(this.socket, id); // Create the game
+		this.game.render(this.stage); // Call the render method. NOTE! Will only be called once
 
-		this.renderer.render(this.stage);
-		this.update();
+		// Add stage listeners to game
+		// Mouse events: mouseup, mousedown, mousemove, click
+		this.stage.on('click', this.game.onMouseClick.bind(this.game));
+		this.stage.on('mousemove', this.game.onMouseMove);
+
+		// Start the loop
+		this._loop();
 	}
 
-	update(){
-		this.TD.update();
+	_loop(){
+		this.game.update();
 
 		// End with draw and continue update
 		this.renderer.render(this.stage);
-		window.requestAnimationFrame(this.update.bind(this));
+		window.requestAnimationFrame(this._loop.bind(this));
+	}
+
+	_onConnect(){
+		console.log('Try connecting to server...');
+	}
+
+	_onConnected(id){
+		console.log('Connected!');
+		console.log("Start Game...");
+
+		this._start(id);
+	}
+
+
+	_onMouseUp(){
+		console.log("asksfmma");
 	}
 }
 
-Game.prototype.h = window.innerHeight;
-Game.prototype.w = window.innerWidth;
+App.prototype.h = window.innerHeight;
+App.prototype.w = window.innerWidth;
 
-var game = new Game();
+var app = new App('http://localhost:3000');

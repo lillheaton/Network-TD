@@ -4,24 +4,16 @@ var express = require('express');
 var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
-
+var game = new (require('./game'))(io);
 
 // Websocket
-var clients = []
 io.on('connection', socket => {
-	console.log('Client joined');
-	console.log(socket.handshake.headers.host);
+	// Add new player to the game
+	game.newPlayer(socket);
 
-	clients.push(socket);
-
-	socket.emit('handshake', "Welcome!");
-
-	socket.on('someEvent', data => {
-
-	});
-
+	// Let game know that player left
 	socket.on('disconnect', () => {
-		delete clients[clients.indexOf(socket)];
+		game.playerDisconnect(socket);
 	});
 });
 
