@@ -1,5 +1,6 @@
 
 import World from './world';
+import UnitManager from './unitManager';
 
 export default class Game {
 	constructor(socket, id){
@@ -12,14 +13,17 @@ export default class Game {
 
 	_init() {
 		this.world = new World();
+		this.unitManager = new UnitManager();
 	}
 
 	// Will only be called once
 	render(stage){
 		stage.addChild(this.world);
+		stage.addChild(this.unitManager);
 	}
 
-	update(){
+	update(time){
+		this.unitManager.update(time);
 	}
 
 
@@ -38,9 +42,10 @@ export default class Game {
 	}
 
 	_onChange(data){
-		console.log("Data incomming");
-		console.log(data);
+		/*console.log("Data incomming");
+		console.log(data);*/
 
+		this.unitManager.units = data.units;
 		this.world.grid = data.world.grid;
 	}
 }

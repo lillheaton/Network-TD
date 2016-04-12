@@ -3,6 +3,7 @@ import PIXI from 'pixi.js';
 import io from 'socket.io-client';
 
 import Game from './js/game';
+import Time from './js/utils/time';
 
 class App {
 	constructor(domain){
@@ -20,8 +21,11 @@ class App {
 		this.stage = new PIXI.Container();
 		this.renderer.render(this.stage); // Initialy draw stage
 
+		// Make the stage interactive
 		this.stage.interactive = true;
 		this.stage.hitArea = new PIXI.Rectangle(0, 0, this.w, this.h);
+
+		this.time = new Time();
 	}
 
 	_start(id){
@@ -35,14 +39,16 @@ class App {
 
 		// Start the loop
 		this._loop();
+		this.time.start();
 	}
 
 	_loop(){
-		this.game.update();
-
-		// End with draw and continue update
-		this.renderer.render(this.stage);
 		window.requestAnimationFrame(this._loop.bind(this));
+		this.time.start();
+		this.game.update(this.time);
+
+		// End with draw
+		this.renderer.render(this.stage);
 	}
 
 	_onConnect(){
@@ -59,10 +65,10 @@ class App {
 
 	_onMouseUp(){
 		console.log("asksfmma");
-	}
+	}	
 }
 
 App.prototype.h = window.innerHeight;
 App.prototype.w = window.innerWidth;
 
-var app = new App('http://localhost:3000');
+var app = new App('ws://localhost:3000');

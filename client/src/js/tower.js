@@ -2,7 +2,7 @@
 import PIXI from 'pixi.js';
 import { TileSize } from './world';
 
-export default class Tower extends PIXI.Container {
+export default class Tower extends PIXI.Graphics {
 	constructor(x, y){
 		super();
 		this.x = x;
@@ -12,12 +12,8 @@ export default class Tower extends PIXI.Container {
 	}
 
 	_setup(){
-		let graphics = new PIXI.Graphics();
-
-		graphics.lineStyle(2, 0xFFFFFF, 1);
-		graphics.drawCircle(this.x, this.y, TileSize / 2);
-
-		this.addChild(graphics);
+		this.lineStyle(2, 0xFFFFFF, 1);
+		this.drawCircle(this.x, this.y, TileSize / 2);
 	}
 
 	update(){

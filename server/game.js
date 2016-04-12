@@ -1,15 +1,20 @@
 'use strict';
 
-var gameLoop = require('node-gameloop');
-
 var Player = require('./player');
 var World = require('./world');
+var UnitManager = require('./unitManager');
+var Time = require('./time');
+
+const clientUpdatePerMilliseconds = 4000;
 
 module.exports = class Game {
 
 	constructor(io){
 		this.io = io;
 		this.players = [];
+		this.lastUpdateTime = 0.0;
+		this.run = false;
+		this.time = new Time();
 	}
 
 
@@ -17,23 +22,41 @@ module.exports = class Game {
 
 	_init(){
 		this.world = new World(30, 18);
-		this.world.on('change', this._onChange.bind(this)); // Listen before createing
+		//this.world.on('change', this._onChange.bind(this)); // Listen before createing
 		this.world.construct(); // Will create the world
+
+		this.unitManager = new UnitManager();
+		this.unitManager.newWave();
 	}
 
 	_start(){
 		this._init();
 
-		// create a 30fps loop
-		this.loopId = gameLoop.setGameLoop(this._update.bind(this), 1000 / 30);
+		// Start loop;
+		this.run = true;
+		this.time.start();
+		this._update();
 	}
 
 	_reset(){
-		gameLoop.clearGameLoop(this.loopId);
+		this.run = false;
+		this.time.reset();
 	}
 
-	_update(delta){
+	_update(){
+		if(!this.run)
+			return;
 
+		setTimeout(this._update.bind(this), 1000.0 / 30.0);
+		this.time.update();
+
+		this.unitManager.update(this.time);
+
+		this.lastUpdateTime += this.time.elapsedMs;
+		if(this.lastUpdateTime > clientUpdatePerMilliseconds){
+			this._onChange(); // Only send data to the client every 2 sec
+			this.lastUpdateTime -= clientUpdatePerMilliseconds;
+		}
 	}
 
 	// Sends data to all players
@@ -41,11 +64,10 @@ module.exports = class Game {
 		let data = {
 			world: {
 				grid: this.world.grid
-			}
+			},
+			units: this.unitManager.units
 		};
-
-		console.log("Send data");
-
+		
 		// Send data to all players
 		this.io.emit('change', data);
 	}
