@@ -47,7 +47,7 @@ module.exports = class Game {
 		if(!this.run)
 			return;
 
-		setTimeout(this._update.bind(this), 1000.0 / 30.0);
+		setTimeout(this._update.bind(this), 1000.0 / 60.0);
 		this.time.update();
 
 		this.unitManager.update(this.time);

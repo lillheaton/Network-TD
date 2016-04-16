@@ -12,8 +12,8 @@ export default class Game {
 	}
 
 	_init() {
-		this.world = new World();
 		this.unitManager = new UnitManager();
+		this.world = new World(this.unitManager);
 	}
 
 	// Will only be called once
@@ -24,6 +24,7 @@ export default class Game {
 
 	update(time){
 		this.unitManager.update(time);
+		this.world.update(time);
 	}
 
 
@@ -42,9 +43,6 @@ export default class Game {
 	}
 
 	_onChange(data){
-		/*console.log("Data incomming");
-		console.log(data);*/
-
 		this.unitManager.units = data.units;
 		this.world.grid = data.world.grid;
 	}

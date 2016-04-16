@@ -9,6 +9,19 @@ module.exports = class UnitManager {
 
 	newWave(){
 		this._units.push(new Unit(10, 10));
+		this._units.push(new Unit(10, 20));
+		this._units.push(new Unit(10, 30));
+		this._units.push(new Unit(10, 40));
+		this._units.push(new Unit(10, 50));
+		this._units.push(new Unit(10, 60));
+		this._units.push(new Unit(10, 70));
+		this._units.push(new Unit(10, 80));
+		this._units.push(new Unit(10, 90));
+		this._units.push(new Unit(10, 100));
+		this._units.push(new Unit(10, 110));
+		this._units.push(new Unit(10, 120));
+		this._units.push(new Unit(10, 130));
+		this._units.push(new Unit(10, 140));
 	}
 
 	update(delta){

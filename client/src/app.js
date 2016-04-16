@@ -2,8 +2,8 @@
 import PIXI from 'pixi.js';
 import io from 'socket.io-client';
 
-import Game from './js/game';
-import Time from './js/utils/time';
+import Game from './game';
+import Time from './utils/time';
 
 class App {
 	constructor(domain){
@@ -25,10 +25,12 @@ class App {
 		this.stage.interactive = true;
 		this.stage.hitArea = new PIXI.Rectangle(0, 0, this.w, this.h);
 
+		this.fps = new FPSMeter({graph: 1, heat: 'FPS', theme: 'light' });
 		this.time = new Time();
 	}
 
 	_start(id){
+		this.fps.showFps();
 		this.game = new Game(this.socket, id); // Create the game
 		this.game.render(this.stage); // Call the render method. NOTE! Will only be called once
 
@@ -44,11 +46,13 @@ class App {
 
 	_loop(){
 		window.requestAnimationFrame(this._loop.bind(this));
+		this.fps.tickStart();
 		this.time.start();
 		this.game.update(this.time);
 
 		// End with draw
 		this.renderer.render(this.stage);
+		this.fps.tick();
 	}
 
 	_onConnect(){

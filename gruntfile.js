@@ -68,6 +68,10 @@ module.exports = function(grunt){
 				files: [{
 					src: ['<%= settings.dev %>/app.js'],
 					dest: '<%= settings.dist %>/js/game.js'
+				},
+				{
+					src: ['<%= settings.dev %>/libs/*.js'],
+					dest: '<%= settings.dist %>/js/libs.js'
 				}]
 			}
 		}
