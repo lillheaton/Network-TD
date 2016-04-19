@@ -1,5 +1,5 @@
 
-import { TileSize } from '../world';
+import { TileSize } from '../../../common/world';
 
 export default class Grass {
 	constructor(tile){

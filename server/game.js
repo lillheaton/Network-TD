@@ -1,7 +1,6 @@
 'use strict';
 
-var Player = require('./player');
-var World = require('./world');
+var WorldController = require('./worldController');
 var UnitManager = require('./unitManager');
 var Time = require('./time');
 
@@ -20,50 +19,49 @@ module.exports = class Game {
 
 	// ### Private Methods ###
 
-	_init(){
-		this.world = new World(30, 18);
-		//this.world.on('change', this._onChange.bind(this)); // Listen before createing
-		this.world.construct(); // Will create the world
+	start(){
+		this.worldController = new WorldController(this);
+		this.unitManager = new UnitManager(this.worldController);
 
-		this.unitManager = new UnitManager();
+		this.worldController.construct(30, 18); // Will create the world
+		this.unitManager.setup();
 		this.unitManager.newWave();
-	}
 
-	_start(){
-		this._init();
+		// Send initial data to the clients
+		this.clientsUpdate();
 
 		// Start loop;
 		this.run = true;
 		this.time.start();
-		this._update();
+		this.update();
 	}
 
-	_reset(){
+	reset(){
 		this.run = false;
 		this.time.reset();
 	}
 
-	_update(){
+	update(){
 		if(!this.run)
 			return;
 
-		setTimeout(this._update.bind(this), 1000.0 / 60.0);
+		setTimeout(this.update.bind(this), 1000.0 / 60.0); // Try to run at 60 FPS
 		this.time.update();
 
 		this.unitManager.update(this.time);
 
 		this.lastUpdateTime += this.time.elapsedMs;
 		if(this.lastUpdateTime > clientUpdatePerMilliseconds){
-			this._onChange(); // Only send data to the client every 2 sec
+			this.clientsUpdate(); // Only send data to the client every 4 sec
 			this.lastUpdateTime -= clientUpdatePerMilliseconds;
 		}
 	}
 
 	// Sends data to all players
-	_onChange(){
+	clientsUpdate(){
 		let data = {
 			world: {
-				grid: this.world.grid
+				grid: this.worldController.world.grid
 			},
 			units: this.unitManager.units
 		};
@@ -72,49 +70,36 @@ module.exports = class Game {
 		this.io.emit('change', data);
 	}
 
-	_incoming(data){
-		switch(data.type){
-			case 'newTower':
-				this.world.newTower(data);
-				break;
-		}
-	}
 
 
-
-	// ### Public Methods ###
 
 	newPlayer(socket){
-		let player = new Player(socket);
-		this.players.push(player);
+		this.players.push(socket);
 
-		console.log('Player: %s joined. Total players: %s', player.host, this.players.length);
+		console.log('Player: %s joined. Total players: %s', socket.id, this.players.length);
 
-		// Send player it's ID
-		player.send('handshake', player.id);
-
-		// Listen to incoming
-		player.on('incoming', this._incoming.bind(this));
+		// Confirm player, say hi!
+		socket.emit('handshake');
 
 		// Check if it's new game
 		if(this.players.length === 1){
 			console.log("Start the game...");
-			this._start();
+			this.start();
 		} else {
 			// Send data to the new player if game already started
-			this._onChange();
+			this.clientsUpdate();
 		}
 	}
 
 	playerDisconnect(socket){
-		let player = this.players.find(s => s.socket === socket);
+		let player = this.players.find(s => s.id === socket.id);
 		this.players.splice(this.players.indexOf(player), 1);
 
 		if(this.players.length < 1){
-			this._reset();
+			this.reset();
 			console.log('No more players, reset game');
 		} else {
-			console.log('Player: %s left. Total players: %s', player.host, this.players.length);	
+			console.log('Player: %s left. Total players: %s', player.id, this.players.length);	
 		}
 	}
 }

@@ -16,4 +16,4 @@ const MathHelper = {
 
 }
 
-export default MathHelper;
+module.exports = MathHelper;

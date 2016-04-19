@@ -16,7 +16,7 @@ module.exports = class World extends EventEmitter {
 			this.grid[i] = [];
 
 			for (var j = 0; j < this.rows; j++) {
-				this.grid[i][j] = { type: "grass" };
+				this.grid[i][j] = { type: "grass", isWall() { return this.type === 'tower' } };
 			};
 		};
 
@@ -32,7 +32,7 @@ module.exports = class World extends EventEmitter {
 
 	newTower(incoming){
 		console.log('Creating new tower (%s, %s)', incoming.tower.x, incoming.tower.y);
-		this.grid[incoming.tower.x][incoming.tower.y] = { type: "tower" };
+		this.grid[incoming.tower.x][incoming.tower.y].type = "tower";
 
 		this.emit('change');
 	}

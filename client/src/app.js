@@ -29,9 +29,9 @@ class App {
 		this.time = new Time();
 	}
 
-	_start(id){
+	_start(){
 		this.fps.showFps();
-		this.game = new Game(this.socket, id); // Create the game
+		this.game = new Game(this.socket); // Create the game
 		this.game.render(this.stage); // Call the render method. NOTE! Will only be called once
 
 		// Add stage listeners to game
@@ -59,17 +59,12 @@ class App {
 		console.log('Try connecting to server...');
 	}
 
-	_onConnected(id){
+	_onConnected(){
 		console.log('Connected!');
 		console.log("Start Game...");
 
-		this._start(id);
+		this._start();
 	}
-
-
-	_onMouseUp(){
-		console.log("asksfmma");
-	}	
 }
 
 App.prototype.h = window.innerHeight;

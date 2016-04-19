@@ -1,5 +1,5 @@
 
-import { TileSize } from '../world';
+import { TileSize } from '../../../common/world';
 import Vector from 'victor';
 
 export default class Tower {

@@ -1,49 +1,43 @@
 
-import World from './world';
+import WorldController from './worldController';
 import UnitManager from './unitManager';
 
 export default class Game {
-	constructor(socket, id){
-		this.id = id;
+	constructor(socket) {
 		this.socket = socket;
-		this.socket.on('change', this._onChange.bind(this));
+		this.socket.on('change', this.onChange.bind(this));
 
-		this._init();
+		this.init();
 	}
 
-	_init() {
+	init() {
 		this.unitManager = new UnitManager();
-		this.world = new World(this.unitManager);
+		this.worldController = new WorldController(this.socket, this.unitManager);
 	}
 
 	// Will only be called once
 	render(stage){
-		stage.addChild(this.world);
+		stage.addChild(this.worldController);
 		stage.addChild(this.unitManager);
 	}
 
 	update(time){
 		this.unitManager.update(time);
-		this.world.update(time);
+		this.worldController.update(time);
 	}
 
 
 	// ### Events ###
 
 	onMouseClick(mouse){
-		let newTower = this.world.createTower(mouse.data.global);
-		if(newTower){
-			console.log("Send new tower (%s, %s)", newTower.x, newTower.y);
-			this.socket.emit('incoming', { type: 'newTower', id: this.id, tower: newTower });
-		}
+		this.worldController.mouseClick(mouse.data.global);
 	}
 
-	onMouseMove(mouse){
-
+	onMouseMove(mouse){		
 	}
 
-	_onChange(data){
+	onChange(data){
 		this.unitManager.units = data.units;
-		this.world.grid = data.world.grid;
+		this.worldController.sync(data.world.grid);
 	}
 }
